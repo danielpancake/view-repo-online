@@ -6,4 +6,9 @@ edition = "2024"
 [lib]
 crate-type = ["cdylib"]
 
+[[bin]]
+name = "ViewRepoOnline"
+path = "src/main.rs"
+
 [dependencies]
+windows = { version = "0.62", features = ["Win32_UI_WindowsAndMessaging"] }

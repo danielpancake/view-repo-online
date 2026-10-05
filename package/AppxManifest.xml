@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
          xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+         xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+         xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
          xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
     <Identity Name="ViewRepoOnline"
               Publisher="CN=danielpancake"
@@ -25,6 +28,33 @@
                                 BackgroundColor="transparent"
                                 Square150x150Logo="Assets\Square150x150Logo.png"
                                 Square44x44Logo="Assets\Square44x44Logo.png" />
+            <Extensions>
+                <!-- DLL surrogate -->
+                <com:Extension Category="windows.comServer">
+                    <com:ComServer>
+                        <com:SurrogateServer DisplayName="View repository online">
+                            <com:Class Id="9e3579f8-17d2-4bb8-b9a2-d315a572ae41"
+                                       Path="view_repo_online.dll"
+                                       ThreadingModel="STA" />
+                        </com:SurrogateServer>
+                    </com:ComServer>
+                </com:Extension>
+                <!-- Explorer integration. -->
+                <desktop4:Extension Category="windows.fileExplorerContextMenus">
+                    <desktop4:FileExplorerContextMenus>
+                        <!-- Right click directory -->
+                        <desktop5:ItemType Type="Directory">
+                            <desktop5:Verb Id="ViewRepository"
+                                           Clsid="9e3579f8-17d2-4bb8-b9a2-d315a572ae41" />
+                        </desktop5:ItemType>
+                        <!-- Right click folder background -->
+                        <desktop5:ItemType Type="Directory\Background">
+                            <desktop5:Verb Id="ViewRepositoryBackground"
+                                           Clsid="9e3579f8-17d2-4bb8-b9a2-d315a572ae41" />
+                        </desktop5:ItemType>
+                    </desktop4:FileExplorerContextMenus>
+                </desktop4:Extension>
+            </Extensions>
         </Application>
     </Applications>
     <Capabilities>

@@ -2,6 +2,12 @@ use std::{os::windows::process::CommandExt, path::Path, process::Command};
 
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
+/// Whether `folder` is inside a Git repository
+/// Only checks for `.git`, so it's fast enough to run on every right-click
+pub fn is_repository(folder: &Path) -> bool {
+    folder.ancestors().any(|dir| dir.join(".git").exists())
+}
+
 /// Returns the web page of the repository containing `folder`
 pub fn repository_url(folder: &Path) -> Result<String, String> {
     let remote = git(folder, &["remote", "get-url", "origin"])?;

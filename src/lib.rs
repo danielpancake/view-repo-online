@@ -17,8 +17,12 @@ impl IExplorerCommand_Impl for TestCommand_Impl {
         unsafe { SHStrDupW(w!("View repository online")) }
     }
 
-    fn GetState(&self, _: Ref<IShellItemArray>, _: BOOL) -> Result<u32> {
-        Ok(ECS_ENABLED.0 as u32)
+    fn GetState(&self, items: Ref<IShellItemArray>, _: BOOL) -> Result<u32> {
+        let state = match folder(items) {
+            Ok(folder) if remote::is_repository(&folder) => ECS_ENABLED,
+            _ => ECS_HIDDEN,
+        };
+        Ok(state.0 as u32)
     }
 
     fn Invoke(&self, items: Ref<IShellItemArray>, _: Ref<IBindCtx>) -> Result<()> {

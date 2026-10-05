@@ -7,7 +7,7 @@ Get-AppxPackage -Name 'ViewRepoOnline' | Remove-AppxPackage
 & (Join-Path $PSScriptRoot 'build.ps1')
 
 # Install
-$manifest = Join-Path $PSScriptRoot 'dist\AppxManifest.xml'
+$manifest = Join-Path (Split-Path $PSScriptRoot -Parent) 'dist\AppxManifest.xml'
 Add-AppxPackage -Register $manifest -ForceApplicationShutdown
 
 Write-Host 'Installed!'

@@ -3,7 +3,7 @@ from shutil import rmtree
 
 from PIL import Image
 
-package = Path(__file__).parent / "package"
+package = Path(__file__).resolve().parent.parent / "package"
 assets = package / "Assets"
 
 light = Image.open(package / "icon.png").convert("RGBA")

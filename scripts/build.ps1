@@ -1,10 +1,11 @@
 $ErrorActionPreference = 'Stop'
 
-$dist = Join-Path $PSScriptRoot 'dist'
+$root = Split-Path $PSScriptRoot -Parent
+$dist = Join-Path $root 'dist'
 
 $target = 'x86_64-pc-windows-msvc'
-$release = Join-Path $PSScriptRoot "target\$target\release"
-$package = Join-Path $PSScriptRoot 'package'
+$release = Join-Path $root "target\$target\release"
+$package = Join-Path $root 'package'
 
 # Get cargo
 $cargo = (Get-Command cargo.exe -ErrorAction SilentlyContinue | Select-Object -First 1).Source
@@ -16,7 +17,7 @@ if (-not (Test-Path -LiteralPath $cargo)) {
 }
 
 # Build
-& $cargo build --release --target $target
+& $cargo build --release --target $target --manifest-path (Join-Path $root 'Cargo.toml')
 if ($LASTEXITCODE -ne 0) {
     throw 'Rust build failed. See the compiler errors above'
 }

@@ -31,21 +31,40 @@ fn git(folder: &Path, args: &[&str]) -> Result<String, String> {
     Ok(String::from_utf8_lossy(&output.stdout).trim().into())
 }
 
-/// git@host:owner/repo.git
-/// ssh://git@host:22/owner/repo.git
-/// https://user:token@host/owner/repo.git
-/// all become
-/// https://host/owner/repo
+/// git@host:owner/repo.git                   -> https://host/owner/repo
+/// ssh://git@host:22/owner/repo.git          -> https://host/owner/repo
+/// https://user:token@host:8443/owner/repo   -> https://host:8443/owner/repo
+/// git@ssh.dev.azure.com:v3/org/project/repo -> https://dev.azure.com/org/project/_git/repo
+/// TODO: probably better way to handle
 fn web_url(remote: &str) -> Option<String> {
     let remote = remote.strip_suffix(".git").unwrap_or(remote);
 
-    let (host, path) = match remote.split_once("://") {
-        Some((_, rest)) => rest.split_once('/')?,
-        None => remote.split_once(':')?,
+    let (scheme, host, path) = match remote.split_once("://") {
+        Some((scheme, rest)) => {
+            let (host, path) = rest.split_once('/')?;
+            (scheme, host, path)
+        }
+        None => {
+            let (host, path) = remote.split_once(':')?;
+            ("ssh", host, path)
+        }
     };
 
     let host = host.rsplit('@').next()?;
+
+    // HTTP(S) remotes already point at the website, port and all
+    if scheme == "http" || scheme == "https" {
+        return Some(format!("{scheme}://{host}/{path}"));
+    }
+
     let host = host.split(':').next()?;
+
+    // Azure DevOps SSH paths look like v3/org/project/repo
+    if host == "ssh.dev.azure.com" || host.ends_with("vs-ssh.visualstudio.com") {
+        let (org, rest) = path.strip_prefix("v3/")?.split_once('/')?;
+        let (project, repo) = rest.split_once('/')?;
+        return Some(format!("https://dev.azure.com/{org}/{project}/_git/{repo}"));
+    }
 
     Some(format!("https://{host}/{path}"))
 }

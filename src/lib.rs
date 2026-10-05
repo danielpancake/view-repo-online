@@ -2,7 +2,7 @@ mod remote;
 
 use std::{ffi::c_void, path::PathBuf};
 use windows::{
-    Win32::Foundation::*, Win32::System::Com::*, Win32::UI::Shell::*,
+    Win32::Foundation::*, Win32::System::Com::*, Win32::UI::HiDpi::*, Win32::UI::Shell::*,
     Win32::UI::WindowsAndMessaging::*, core::*,
 };
 
@@ -33,14 +33,7 @@ impl IExplorerCommand_Impl for TestCommand_Impl {
                     SW_SHOWNORMAL,
                 );
             },
-            Err(message) => unsafe {
-                MessageBoxW(
-                    None,
-                    &HSTRING::from(message),
-                    w!("View repository online"),
-                    MB_ICONERROR,
-                );
-            },
+            Err(message) => show_error(&message),
         }
         Ok(())
     }
@@ -97,6 +90,22 @@ impl IClassFactory_Impl for Factory_Impl {
 
     fn LockServer(&self, _: BOOL) -> Result<()> {
         Ok(())
+    }
+}
+
+fn show_error(message: &str) {
+    unsafe {
+        // dllhost.exe isn't DPI aware
+        let previous = SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
+        MessageBoxW(
+            None,
+            &HSTRING::from(message),
+            w!("View repository online"),
+            MB_ICONERROR | MB_SETFOREGROUND | MB_TOPMOST,
+        );
+
+        SetThreadDpiAwarenessContext(previous);
     }
 }
 
